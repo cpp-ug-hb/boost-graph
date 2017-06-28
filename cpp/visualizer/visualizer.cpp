@@ -91,17 +91,6 @@ void print_stats(Graph const& g)
 
 void write(Graph const& g, const char* output_file)
 {
-  BOOST_FOREACH( auto edge, boost::edges(g)) {
-    std::cout
-        << get(boost::edge_weight, g, edge)
-        << " - '"
-        << get(boost::vertex_name, g, source(edge, g))
-        << "' - '"
-        << get(boost::vertex_name, g, target(edge, g))
-        << "'\n";
-  }
-
-
   std::ofstream output(output_file);
   boost::write_graphviz(
         output,
