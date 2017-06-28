@@ -1,0 +1,21 @@
+digraph ninja {
+rankdir="LR"
+"all" [label="all"]
+"scheduler" [label="scheduler"]
+"visualizer" [label="visualizer"]
+"helper"  [label="helper"]
+"helper1" [label="helper1"]
+"helper2" [label="helper2"]
+"helper3" [label="helper3"]
+
+"scheduler"  -> "all"
+"visualizer" -> "all"
+"helper"     -> "scheduler"
+"helper3"    -> "scheduler"
+"helper"     -> "visualizer"
+"helper1"    -> "visualizer"
+"helper1"    -> "helper"
+"helper2"    -> "helper"
+"helper3"    -> "helper"
+"helper2"    -> "helper1"
+}

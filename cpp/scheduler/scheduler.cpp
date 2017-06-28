@@ -4,9 +4,8 @@
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
-#include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/breadth_first_search.hpp>
-
+#include <boost/graph/topological_sort.hpp>
 #include <boost/graph/reverse_graph.hpp>
 
 using Vertex_p = boost::property< boost::vertex_name_t, std::string>;
@@ -23,6 +22,7 @@ using Graph = boost::adjacency_list<
 >;
 
 using Vertex = boost::graph_traits<Graph>::vertex_descriptor;
+using Edge = boost::graph_traits<Graph>::edge_descriptor;
 
 
 void parse(Graph& g, const char* filename)
@@ -80,43 +80,83 @@ lambda_visitor(Tag const&, Callable c) {
   return { std::move(c) };
 }
 
+template<typename G>
+struct reachable {
+  reachable() { }
+  reachable(const G* graph, std::set<Vertex> reachable)
+    : m_graph(graph)
+    , m_reachable(reachable)
+  { }
 
-void schedule(Graph const& g, std::string target_name)
+  bool operator()(const Edge& e) const {
+    return true;
+  }
+
+  bool operator()(const Vertex& v) const {
+    return m_reachable.count(v);
+  }
+
+  const G* m_graph = nullptr;
+  std::set<Vertex> m_reachable;
+};
+
+
+template< typename G>
+std::set<Vertex>
+reachable_part(G const & g, Vertex start)
 {
-  // "execute" dependencies in order to build a target
-
-  // find the target in the graph
-  auto start = find_start(g, target_name);
-
-
-  // reverse the graph, because the arrows go the wrong direction
-  auto reversed_g = boost::make_reverse_graph(g);
 
   // record execution order in this vector
-  std::vector<Vertex> order;
+  std::set<Vertex> reachable_vertices;
 
   // execute this visitor on every new node ...
   auto visitor = boost::make_bfs_visitor(
       lambda_visitor(
         boost::on_discover_vertex{},
         [&] (auto v) {
-          order.push_back(v);
+          reachable_vertices.insert(v);
         }
       ));
 
   // ... when doing a bfs visit staring from the target
   boost::breadth_first_search(
-        reversed_g,
-        boost::vertex(start, reversed_g),
+        g,
+        boost::vertex(start, g),
         boost::visitor(visitor)
   );
 
-  //
-  std::reverse(begin(order), end(order));
+  return reachable_vertices;
+}
 
-  //
-  for (auto & v : order) {
-    std::cout << "build " <<  get(boost::vertex_name, g, v) << '\n';
+
+template<typename G>
+std::vector<Vertex> schedule(G const& g)
+{
+  std::vector<Vertex> order;
+  boost::topological_sort(g, std::back_inserter(order));
+
+  return order;
+}
+
+void run(Graph const& g, std::string target_name)
+{
+  // "execute" dependencies in order to build a target
+
+  // find the target in the graph
+  auto start = find_start(g, target_name);
+
+  // reverse the graph, because the arrows go the wrong direction
+  auto reversed_g = boost::make_reverse_graph(g);
+
+  auto reachable_vertices = reachable_part(reversed_g, start);
+
+//  auto execution_order = schedule(reachable_g);
+  auto execution_order = schedule(reversed_g);
+
+  for (auto & v : execution_order) {
+    if  (reachable_vertices.count(v)) {
+      std::cout << "build " <<  get(boost::vertex_name, g, v) << '\n';
+    }
   }
 
 }
@@ -131,7 +171,7 @@ int main(int argc, char *argv[])
 
   Graph g;
   parse(g, argv[1]);
-  schedule(g, argv[2]);
+  run(g, argv[2]);
 
   return 0;
 }
