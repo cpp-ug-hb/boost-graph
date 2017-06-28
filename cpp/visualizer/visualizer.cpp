@@ -54,34 +54,57 @@ void parse(Graph& g, const char* filename)
       } else {
         nodes.push_back(iter->second);
       }
+    }
 
-      for (int i = 0; i < nodes.size(); ++i) {
-        for (int j = i+1; j < nodes.size(); ++j) {
+    for (int i = 0; i < nodes.size(); ++i) {
+      for (int j = i+1; j < nodes.size(); ++j) {
 
-          // returns edge, bool [exists]
-          auto edge_p = boost::edge(nodes[i], nodes[j], g);
+        // returns edge, bool [exists]
+        auto edge_p = boost::edge(nodes[i], nodes[j], g);
 
-          if (not edge_p.second) {
-            edge_p = boost::add_edge(nodes[i], nodes[j], g);
-          }
-
-          auto edge = edge_p.first;
-
-          auto weight = get(boost::edge_weight,g , edge);
-          put(boost::edge_weight, g, edge, weight +1);
+        if (not edge_p.second) {
+          edge_p = boost::add_edge(nodes[i], nodes[j], g);
         }
-      }
 
+        auto edge = edge_p.first;
+
+        auto weight = get(boost::edge_weight,g , edge);
+        put(boost::edge_weight, g, edge, weight +1);
+      }
     }
   }
 }
 
 
+void print_stats(Graph const& g)
+{
+  BOOST_FOREACH( auto edge, boost::edges(g)) {
+    std::cout
+        << get(boost::edge_weight, g, edge)
+        << " - '"
+        << get(boost::vertex_name, g, source(edge, g))
+        << "' - '"
+        << get(boost::vertex_name, g, target(edge, g))
+        << "'\n";
+  }
+}
+
 void write(Graph const& g, const char* output_file)
 {
+  BOOST_FOREACH( auto edge, boost::edges(g)) {
+    std::cout
+        << get(boost::edge_weight, g, edge)
+        << " - '"
+        << get(boost::vertex_name, g, source(edge, g))
+        << "' - '"
+        << get(boost::vertex_name, g, target(edge, g))
+        << "'\n";
+  }
+
+
   std::ofstream output(output_file);
   boost::write_graphviz(
-        std::cout,
+        output,
         g,
         boost::make_label_writer( get(boost::vertex_name, g) ),
         boost::make_label_writer( get(boost::edge_weight, g) )
@@ -89,6 +112,45 @@ void write(Graph const& g, const char* output_file)
 }
 
 
+
+struct min_edge_weight {
+  min_edge_weight() { }
+  min_edge_weight(const Graph* graph, unsigned min) : m_graph(graph), m_min(min) { }
+
+  template <typename Edge>
+  bool operator()(const Edge& e) const {
+    return m_min <= get(boost::edge_weight, *m_graph, e);
+  }
+
+  bool operator()(const Vertex& v) const {
+    BOOST_FOREACH(auto edge, boost::out_edges(v, *m_graph)) {
+      if ((*this)(edge)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const Graph * m_graph = nullptr;
+  unsigned m_min = 0;
+};
+
+
+
+void write(Graph const& g, const char* output_file, unsigned min_weight)
+{
+  min_edge_weight filter(&g, min_weight);
+  boost::filtered_graph<Graph, min_edge_weight, min_edge_weight> filtered(g, filter, filter);
+
+
+  std::ofstream output(output_file);
+  boost::write_graphviz(
+        output,
+        filtered,
+        boost::make_label_writer( get(boost::vertex_name, g) ),
+        boost::make_label_writer( get(boost::edge_weight, g) )
+  );
+}
 
 int main(int argc, char *argv[])
 {
@@ -98,8 +160,16 @@ int main(int argc, char *argv[])
   }
 
   Graph g;
+
   parse(g, argv[1]);
+
+  print_stats(g);
+
   write(g, "graph.dot");
+
+  write(g, "filtered_2.dot", 2);
+
+  write(g, "filtered_5.dot", 5);
 
   return 0;
 }
