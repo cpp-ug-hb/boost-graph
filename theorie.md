@@ -4,9 +4,10 @@
 ---
 
 ### Was ist ein Graph
-* Zunächst besteht ein Graph aus Knoten und Kanten: G = (E,V)  (E = Knoten, V = Kanten)
+* Zunächst besteht ein Graph aus einer Menge von Knoten und Kanten: G = (E,V)  (E = Knoten, V = Kanten)
 * gerichtet, ungerichtet
 * (a)zyklisch
+* weitere Eigenschaften: gewichtet, gefärbt
 
 ---
 
@@ -21,7 +22,7 @@ Note: Graphische Repräsentation kann auch anders sein (hier: üblich)
 !["ungerichteter-Graph"](imgs/Graph_ungerichtet.svg)
 
 
---- 
+---
 
 ### Weitere Eigenschaften
 * Knoten und Kanten können Eigenschaften zugewiesen werden
@@ -29,10 +30,15 @@ Note: Graphische Repräsentation kann auch anders sein (hier: üblich)
 ---
 
 ### Beispielanwendungen
-* Schaltkreis: Modellierungen als azykklischer Graph
+* Schaltkreis: Modellierungen als azyklischer Graph
 * Abhängigkeitsgraph in einer Build-Umgebung
+* Stammbaum 
+* Graphdatenbank 
 
 
 ---
-### Graph als Datenstruktur
-* Repräsentation als Adjanzenzmatrix 
+
+### Graph als Datenstruktur - Repräsentation
+* Adjazenzmatrix 
+* Adjazenzliste 
+

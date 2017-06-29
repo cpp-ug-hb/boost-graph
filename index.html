@@ -34,17 +34,48 @@
 				</section>
 
 				<section data-background="#212121" data-background-transition="zoom">
-					<section data-separator-notes="^Note:" 
+					<section data-separator-notes="^Note:"
 						 data-vertical="^---\n"
 						  data-markdown="overview.md">
 					</section>
 				</section>
 
 				<section data-background="#212121" data-background-transition="zoom">
-					<section data-separator-notes="^Note:" 
+					<section data-separator-notes="^Note:"
 						 data-vertical="^---\n"
 						  data-markdown="theorie.md">
 					</section>
+				</section>
+
+				<section data-background="#212121" data-background-transition="zoom">
+					<section data-separator-notes="^Note:"
+						 data-vertical="^---\n"
+						 data-markdown="boost.graph.md">
+					</section>
+
+					<section>
+						<h3>Adjazanzlisten</h3>
+						<pre><code class="hljs" data-trim>
+ using Graph = boost::adjacency_list<
+  boost::vecS, // vecS: vector of nodes (setS, listS)
+  boost::vecS, // vecS: vector of nodes (setS, listS)
+  boost::bidirectionalS,
+  Vertex_p,
+  Edge_p,
+  Graph_p>;
+
+						</code></pre>
+					</section>
+					<section>
+						<h3>Knoten und Kanten - Eigenschaften</h3>
+						<pre><code class="hljs" data-trim>
+using Vertex_p = boost::property< boost::vertex_name_t, std::string>;
+using Edge_p = boost::property< boost::edge_name_t, std::string>;
+using Graph_p = boost::property< boost::graph_name_t, std::string>;
+						</code></pre>
+					</section>
+
+
 				</section>
 
 			</div>
